@@ -1,32 +1,21 @@
-# Prerequisites
-*.d
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+using namespace std;
 
-# Precompiled Headers
-*.gch
-*.pch
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+void main()
+{
+	int a = 12;
+	stringstream s;
+	s << a;
+	string st;
+	st = s.str();
+	cout << st<<endl;
+	st.pop_back();
+	char l = '-';
+	st.push_back(l);
+	cout << st<<endl;
+}
