@@ -2,20 +2,55 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-
+#include <vector>
 using namespace std;
 
+int arr[16];
+vector<string> minterms;
+vector<string> dc;
+vector<string> pi;
+
+string dec_to_bin(int bits, int num)
+{
+	string bin;
+	int arr[16];
+	int i;
+	for (i = 0; i < bits; i++)
+	{
+		arr[i] = num % 2;
+		num /= 2;
+	}
+	for (i = i - 1; i >= 0; i--)
+	{
+		bin += to_string(arr[i]);
+	}
+	return bin;
+}
+
+void read(string name)
+{
+	char new_line = '\n';
+	int t;
+	ifstream open(name);
+	if (!open.is_open())
+	{
+		cout << "Error while openning file" << '\n';
+		return;
+	}
+	int no_bits;
+	open >> no_bits;
+	while (!open.eof())
+	{
+		open >> t;
+		pi.push_back(dec_to_bin(no_bits, t));
+		open.ignore();
+	}
+	for (int i = 0; i < pi.size(); i++)
+		cout << pi.at(i) << endl;
+}
 
 void main()
 {
-	int a = 12;
-	stringstream s;
-	s << a;
-	string st;
-	st = s.str();
-	cout << st<<endl;
-	st.pop_back();
-	char l = '-';
-	st.push_back(l);
-	cout << st<<endl;
+	read("Test.txt");
+	system("pause");
 }
