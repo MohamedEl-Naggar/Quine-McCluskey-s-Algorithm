@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cmath>
 using namespace std;
 
 int arr[16];
@@ -38,10 +39,38 @@ void read(string name)
 		return;
 	}
 	int no_bits;
+	string s;
 	open >> no_bits;
+	if (no_bits > 16 || no_bits <= 0)
+	{
+		cout << "Invalid input, number of variables must be bigger than 0 and less than 16" << endl;
+		return;
+	}
+	open.ignore();
+	getline(open, s);
+	open.seekg(2);
+	for(int i=0; i<=s.length()/2; i++)
+	{
+		open >> t;
+		if (t >= pow(2,no_bits)||t<0)
+		{
+			cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
+			return;
+		}
+			minterms.push_back(dec_to_bin(no_bits, t));
+		pi.push_back(dec_to_bin(no_bits, t));
+		open.ignore();
+	}
 	while (!open.eof())
 	{
 		open >> t;
+		for(int i =0; i < minterms.size(); i++)
+			if (dec_to_bin(no_bits, t) == minterms[i])
+			{
+				cout << "Error, there is a dont care value which is equal to one of the minterms" << endl;
+				return;
+			}
+		dc.push_back(dec_to_bin(no_bits, t));
 		pi.push_back(dec_to_bin(no_bits, t));
 		open.ignore();
 	}
