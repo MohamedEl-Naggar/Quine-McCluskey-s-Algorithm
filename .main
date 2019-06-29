@@ -7,10 +7,16 @@
 #include <cmath>
 using namespace std;
 
+struct prime_implicants
+{
+	string str;
+	vector<int> covers;
+};
+
+vector<prime_implicants> pi;
 vector<string> minterms;
 vector<string> dc;
-vector<string> pi;
-vector<string> temp;
+vector<prime_implicants> temp;
 vector<int> to_be_removed;
 
 string dec_to_bin(int bits, int num)
@@ -60,7 +66,10 @@ void read(string name)
 			return;
 		}
 		minterms.push_back(dec_to_bin(no_bits, t));
-		pi.push_back(dec_to_bin(no_bits, t));
+		prime_implicants p;
+		p.str = dec_to_bin(no_bits, t);
+		p.covers.push_back(t);
+		pi.push_back(p);
 		open.ignore();
 	}
 	while (!open.eof())
@@ -73,11 +82,14 @@ void read(string name)
 				return;
 			}
 		dc.push_back(dec_to_bin(no_bits, t));
-		pi.push_back(dec_to_bin(no_bits, t));
+		prime_implicants p;
+		p.str = dec_to_bin(no_bits, t);
+		p.covers.push_back(t);
+		pi.push_back(p);
 		open.ignore();
 	}
 	for (int i = 0; i < pi.size(); i++)
-		cout << pi[i] << endl;
+		cout << pi[i].str << endl;
 }
 
 bool one_diff(string a, string b)
@@ -92,17 +104,22 @@ bool one_diff(string a, string b)
 		return 0;
 }
 
-void insert_dash(string a, string b)
+void insert_dash(prime_implicants a, prime_implicants b)
 {
 	int flag = 0;
-	for (int i = 0; i < a.length(); i++)
-		if (a[i] != b[i])
-			a.replace(i, 1, "-");
+	for (int i = 0; i < a.str.length(); i++)
+		if (a.str[i] != b.str[i])
+			a.str.replace(i, 1, "-");
 	for (int i = 0; i < temp.size(); i++)
-		if (a == temp[i])
+		if (a.str == temp[i].str)
 			flag++;
 	if (flag == 0)
+	{
+		for (int i = 0; i < b.covers.size(); i++)
+			a.covers.push_back(b.covers[i]);
 		temp.push_back(a);
+
+	}
 
 }
 
@@ -118,22 +135,19 @@ void find_pi()
 {
 	int size = pi.size();
 	int flag = 1;
-	cout << "size; " << pi.size() << endl;
 	while (flag==1)
 	{	
 		flag = 0;
 		for (int i = 0; i < pi.size(); i++)
 			for (int j = i + 1; j < pi.size(); j++)
-				if (one_diff(pi[i], pi[j]))
+				if (one_diff(pi[i].str, pi[j].str))
 				{
-					cout << i << "  " << j << endl;
 					flag = 1;
 					insert_dash(pi[i], pi[j]);
 					if(not_inside(i))
 						to_be_removed.push_back(i);
 					if (not_inside(j))
 						to_be_removed.push_back(j);
-					cout << pi.size() << endl;
 				}
 		if (flag == 1)
 		{
@@ -146,7 +160,12 @@ void find_pi()
 			for (int i = 0; i < temp.size(); i++)
 				pi.push_back(temp[i]);
 			for (int i = 0; i < pi.size(); i++)
-				cout << "Prime Imp: " << pi[i] << endl;
+			{
+				cout << "Prime Imp: " << pi[i].str << " Coveres these minterms and dont cares: ";
+				for (int j = 0; j < pi[i].covers.size(); j++)
+					cout << pi[i].covers[j]<< ", ";
+				cout << endl;
+			}
 			to_be_removed.clear();
 			temp.clear();
 		}
@@ -158,6 +177,5 @@ void main()
 {
 	read("Test.txt");
 	find_pi();
-
 	system("pause");
 }
