@@ -10,6 +10,8 @@ using namespace std;
 vector<string> minterms;
 vector<string> dc;
 vector<string> pi;
+vector<string> temp;
+vector<int> to_be_removed;
 
 string dec_to_bin(int bits, int num)
 {
@@ -49,22 +51,22 @@ void read(string name)
 	open.ignore();
 	getline(open, s);
 	open.seekg(2);
-	for(int i=0; i<=s.length()/2; i++)
+	for (int i = 0; i <= s.length() / 2; i++)
 	{
 		open >> t;
-		if (t >= pow(2,no_bits)||t<0)
+		if (t >= pow(2, no_bits) || t<0)
 		{
 			cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
 			return;
 		}
-			minterms.push_back(dec_to_bin(no_bits, t));
+		minterms.push_back(dec_to_bin(no_bits, t));
 		pi.push_back(dec_to_bin(no_bits, t));
 		open.ignore();
 	}
 	while (!open.eof())
 	{
 		open >> t;
-		for(int i =0; i < minterms.size(); i++)
+		for (int i = 0; i < minterms.size(); i++)
 			if (dec_to_bin(no_bits, t) == minterms[i])
 			{
 				cout << "Error, there is a dont care value which is equal to one of the minterms" << endl;
@@ -92,27 +94,63 @@ bool one_diff(string a, string b)
 
 void insert_dash(string a, string b)
 {
-
+	int flag = 0;
 	for (int i = 0; i < a.length(); i++)
 		if (a[i] != b[i])
-		{
 			a.replace(i, 1, "-");
-		}
-	pi.push_back(a);
+	for (int i = 0; i < temp.size(); i++)
+		if (a == temp[i])
+			flag++;
+	if (flag == 0)
+		temp.push_back(a);
 
+}
+
+bool not_inside(int x)
+{
+	for (int i = 0; i < to_be_removed.size(); i++)
+		if (x == to_be_removed[i])
+			return 0;
+	return 1;
 }
 
 void find_pi()
 {
 	int size = pi.size();
+	int flag = 1;
 	cout << "size; " << pi.size() << endl;
-	for (int i = 0; i<pi.size(); i++)
-		for (int j = i + 1; j <pi.size(); j++)
-			if (one_diff(pi[i], pi[j]))
+	while (flag==1)
+	{	
+		flag = 0;
+		for (int i = 0; i < pi.size(); i++)
+			for (int j = i + 1; j < pi.size(); j++)
+				if (one_diff(pi[i], pi[j]))
+				{
+					cout << i << "  " << j << endl;
+					flag = 1;
+					insert_dash(pi[i], pi[j]);
+					if(not_inside(i))
+						to_be_removed.push_back(i);
+					if (not_inside(j))
+						to_be_removed.push_back(j);
+					cout << pi.size() << endl;
+				}
+		if (flag == 1)
+		{
+			sort(to_be_removed.begin(), to_be_removed.end());
+			for (int i = to_be_removed.size() - 1; i >= 0; i--)
 			{
-				insert_dash(pi[i], pi[j]);
-				cout << pi.size() << endl;
+				pi.erase(pi.begin() + to_be_removed[i]);
+				cout << "value of indexes to be removed: " << to_be_removed[i] << endl;
 			}
+			for (int i = 0; i < temp.size(); i++)
+				pi.push_back(temp[i]);
+			for (int i = 0; i < pi.size(); i++)
+				cout << "Prime Imp: " << pi[i] << endl;
+			to_be_removed.clear();
+			temp.clear();
+		}
+	}
 }
 
 
@@ -120,5 +158,6 @@ void main()
 {
 	read("Test.txt");
 	find_pi();
+
 	system("pause");
 }
