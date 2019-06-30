@@ -13,8 +13,6 @@ struct prime_implicants
 };
 
 vector<prime_implicants> pi;
-vector<string> minterms;
-vector<string> dc;
 vector<prime_implicants> temp;
 vector<int> to_be_removed;
 vector<int> mint;
@@ -53,13 +51,12 @@ void read(string name)
 	open >> no_bits;
 	if (no_bits > 16 || no_bits <= 0)
 	{
-		cout << "Invalid input, number of variables must be bigger than 0 and less than 16" << endl;
+		cout << "Invalid input, number of variables must be bigger than 0 and less or equal to 16" << endl;
 		return;
 	}
 	open.ignore();
 	getline(open, s);
 	open.seekg(3);
-	cout << "sdsaf" << open.peek() << endl;
 
 	while(open.peek() != '\n')
 	{
@@ -73,7 +70,6 @@ void read(string name)
 				cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
 				return;
 			}
-			minterms.push_back(dec_to_bin(no_bits, t));
 			prime_implicants p;
 			p.str = dec_to_bin(no_bits, t);
 			p.covers.push_back(t);
@@ -85,13 +81,12 @@ void read(string name)
 	while (!open.eof())
 	{
 		open >> t;
-		for (int i = 0; i < minterms.size(); i++)
-			if (dec_to_bin(no_bits, t) == minterms[i])
+		for (int i = 0; i < mint.size(); i++)
+			if (t == mint[i])
 			{
 				cout << "Error, there is a dont care value which is equal to one of the minterms" << endl;
 				return;
 			}
-		dc.push_back(dec_to_bin(no_bits, t));
 		prime_implicants p;
 		p.str = dec_to_bin(no_bits, t);
 		p.covers.push_back(t);
@@ -99,12 +94,18 @@ void read(string name)
 		pi.push_back(p);
 		open.ignore();
 	}
+	cout << "Minterms: " << endl;
+	for (int i = 0; i < mint.size(); i++)
+		cout << mint[i] << ", ";
+	cout << endl;
+	cout << "Don't Cares: " << endl;
+	for (int i = 0; i < dontcares.size(); i++)
+		cout << dontcares[i] << ", ";
+	cout << endl;
+	cout << "Column 1: " << endl;
 	for (int i = 0; i < pi.size(); i++)
 		cout << pi[i].str << endl;
-	for (int i = 0; i<dontcares.size(); i++)
-		cout << "dcsssscc: " << dontcares[i] << endl;
-	for(int i=0;i<mint.size(); i++)
-		cout << "mintermmsss: " << mint[i] << endl;
+
 }
 
 bool one_diff(string a, string b)
@@ -156,6 +157,7 @@ bool inside(string x)
 
 void find_pi()
 {
+	int column = 2;
 	int size = pi.size();
 	int flag = 1;
 	while (flag)
@@ -176,23 +178,24 @@ void find_pi()
 		{
 			sort(to_be_removed.begin(), to_be_removed.end());
 			for (int i = to_be_removed.size() - 1; i >= 0; i--)
-			{
 				pi.erase(pi.begin() + to_be_removed[i]);
-				cout << "value of indexes to be removed: " << to_be_removed[i] << endl;
-			}
 			for (int i = 0; i < temp.size(); i++)
 				pi.push_back(temp[i]);
+			cout << "Column " << column << ": " << endl;
 			for (int i = 0; i < pi.size(); i++)
 			{
-				cout << "Prime Imp: " << pi[i].str << " Covers these minterms and dont cares: ";
+				cout << pi[i].str << " Covers these minterms and dont cares: ";
 				for (int j = 0; j < pi[i].covers.size(); j++)
 					cout << pi[i].covers[j]<< ", ";
 				cout << endl;
 			}
+			column++;
 			to_be_removed.clear();
 			temp.clear();
 		}
 	}
+	cout << "Column " << column - 1 << " has the prime implicants " << endl;
+	cout << endl;
 }
 
 bool inside_num(int x, vector<int> n)
@@ -222,7 +225,7 @@ void find_essentials()
 			if ((check_essentials(pi[i].covers[j])) && (inside_num(pi[i].covers[j], mint))&&(!inside(pi[i].str)))
 				ess.push_back(pi[i]);
 	for (int i = 0; i < ess.size(); i++)
-		cout << "essentials: " << ess[i].str << endl;		
+		cout << "Essential prime implicants: " << ess[i].str << endl;		
 	to_be_removed.clear();
 	for (int i = 0; i < ess.size(); i++)
 		for (int j = 0; j < ess[i].covers.size(); j++)
@@ -232,6 +235,7 @@ void find_essentials()
 	for (int i = 0; i < mint.size(); i++)
 		if (!inside_num(mint[i], to_be_removed))
 			cout << mint[i] << ", ";
+	cout << endl;
 }
 
 void main()
