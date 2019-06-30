@@ -19,7 +19,7 @@ vector<prime_implicants> temp;
 vector<int> to_be_removed;
 vector<int> mint;
 vector<int> dontcares;
-vector<string> ess;
+vector<prime_implicants> ess;
 
 string dec_to_bin(int bits, int num)
 {
@@ -40,7 +40,6 @@ string dec_to_bin(int bits, int num)
 
 void read(string name)
 {
-	char new_line = '\n';
 	int t;
 	ifstream open(name);
 	if (!open.is_open())
@@ -135,6 +134,14 @@ bool not_inside(int x)
 	return 1;
 }
 
+bool inside(string x)
+{
+	for (int i = 0; i < ess.size(); i++)
+		if (x == ess[i].str)
+			return 1;
+	return 0;
+}
+
 void find_pi()
 {
 	int size = pi.size();
@@ -176,14 +183,6 @@ void find_pi()
 	}
 }
 
-bool inside(string x)
-{
-	for (int i = 0; i < ess.size(); i++)
-		if (x == ess[i])
-			return 1;
-	return 0;
-}
-
 bool inside_num(int x, vector<int> n)
 {
 	for (int i = 0; i < n.size(); i++)
@@ -192,32 +191,39 @@ bool inside_num(int x, vector<int> n)
 	return 0;
 }
 
+bool check_essentials(int num)
+{
+	int counter = 0;
+	for (int i = 0; i < pi.size(); i++)
+		for (int j = 0; j < pi[i].covers.size(); j++)
+			if (num == pi[i].covers[j])
+				counter++;
+	if (counter == 1)
+		return 1;
+	return 0;
+}
+
 void find_essentials()
 {
-	vector<int> num;
-	int temp;
-	int flag = 1;
 	for (int i = 0; i < pi.size(); i++)
-		for (int k = 0; k < pi[i].covers.size(); k++)
-		{
-			for (int j = 0; j < pi.size(); j++)
-				for (int l = 0; l < pi[j].covers.size(); l++)
-				{
-					if (i != j)
-						if (pi[i].covers[k] == pi[j].covers[l])
-							flag = 0;
-
-				}
-			if ((flag != 0) && (!inside(pi[i].str)) && (inside_num(pi[i].covers[k], mint)) && (!inside_num(pi[i].covers[k], num)))
-			{
-				ess.push_back(pi[i].str);
-				num.push_back(pi[i].covers[k]);
-			}
-		}
-	cout << endl;
+		for (int j = 0; j < pi[i].covers.size(); j++)
+			if ((check_essentials(pi[i].covers[j])) && (inside_num(pi[i].covers[j], mint))&&(!inside(pi[i].str)))
+				ess.push_back(pi[i]);
+	for (int i = 0; i<dontcares.size(); i++)
+		cout << "dcsssscc: " << dontcares[i] << endl;
+	for(int i=0;i<mint.size(); i++)
+	cout << "mintermmsss: " << mint[i] << endl;
 	for (int i = 0; i < ess.size(); i++)
-		cout << "essentials: " << ess[i] << endl;
-			
+		cout << "essentials: " << ess[i].str << endl;		
+	to_be_removed.clear();
+	for (int i = 0; i < ess.size(); i++)
+		for (int j = 0; j < ess[i].covers.size(); j++)
+			if (!inside_num(ess[i].covers[j], to_be_removed))
+				to_be_removed.push_back(ess[i].covers[j]);
+	cout << "These minterms are not covered by essentials: ";
+	for (int i = 0; i < mint.size(); i++)
+		if (!inside_num(mint[i], to_be_removed))
+			cout << mint[i] << ", ";
 }
 
 void main()
