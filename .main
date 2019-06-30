@@ -40,6 +40,7 @@ string dec_to_bin(int bits, int num)
 
 void read(string name)
 {
+	char temp;
 	int t;
 	ifstream open(name);
 	if (!open.is_open())
@@ -57,23 +58,30 @@ void read(string name)
 	}
 	open.ignore();
 	getline(open, s);
-	open.seekg(2);
-	for (int i = 0; i <= s.length() / 2; i++)
+	open.seekg(3);
+	cout << "sdsaf" << open.peek() << endl;
+
+	while(open.peek() != '\n')
 	{
-		open >> t;
-		if (t >= pow(2, no_bits) || t<0)
+		if (open.peek() == ',')
+			open.ignore();
+		else
 		{
-			cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
-			return;
+			open >> t;
+			if (t >= pow(2, no_bits) || t < 0)
+			{
+				cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
+				return;
+			}
+			minterms.push_back(dec_to_bin(no_bits, t));
+			prime_implicants p;
+			p.str = dec_to_bin(no_bits, t);
+			p.covers.push_back(t);
+			mint.push_back(t);
+			pi.push_back(p);
 		}
-		minterms.push_back(dec_to_bin(no_bits, t));
-		prime_implicants p;
-		p.str = dec_to_bin(no_bits, t);
-		p.covers.push_back(t);
-		mint.push_back(t);
-		pi.push_back(p);
-		open.ignore();
 	}
+	open.ignore();
 	while (!open.eof())
 	{
 		open >> t;
@@ -93,6 +101,10 @@ void read(string name)
 	}
 	for (int i = 0; i < pi.size(); i++)
 		cout << pi[i].str << endl;
+	for (int i = 0; i<dontcares.size(); i++)
+		cout << "dcsssscc: " << dontcares[i] << endl;
+	for(int i=0;i<mint.size(); i++)
+		cout << "mintermmsss: " << mint[i] << endl;
 }
 
 bool one_diff(string a, string b)
@@ -209,10 +221,6 @@ void find_essentials()
 		for (int j = 0; j < pi[i].covers.size(); j++)
 			if ((check_essentials(pi[i].covers[j])) && (inside_num(pi[i].covers[j], mint))&&(!inside(pi[i].str)))
 				ess.push_back(pi[i]);
-	for (int i = 0; i<dontcares.size(); i++)
-		cout << "dcsssscc: " << dontcares[i] << endl;
-	for(int i=0;i<mint.size(); i++)
-	cout << "mintermmsss: " << mint[i] << endl;
 	for (int i = 0; i < ess.size(); i++)
 		cout << "essentials: " << ess[i].str << endl;		
 	to_be_removed.clear();
