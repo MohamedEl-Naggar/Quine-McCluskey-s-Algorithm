@@ -35,7 +35,6 @@ string dec_to_bin(int bits, int num)
 	}
 	return bin;
 }
-
 void read(string name)
 {
 	char temp;
@@ -58,16 +57,22 @@ void read(string name)
 	getline(open, s);
 	open.seekg(3);
 
-	while(open.peek() != '\n')
+	while (open.peek() != '\n')
 	{
 		if (open.peek() == ',')
 			open.ignore();
 		else
 		{
 			open >> t;
+			for (int i = 0; i<mint.size(); i++)
+				if (t == mint[i])
+				{
+					cout << "Error, there is a minterm appeared more than once" << endl;
+					return;
+				}
 			if (t >= pow(2, no_bits) || t < 0)
 			{
-				cout << "invalid input, minterms must be positive and less than the number of variables" << endl;
+				cout << "invalid input, minterms out of range" << endl;
 				return;
 			}
 			prime_implicants p;
@@ -81,10 +86,21 @@ void read(string name)
 	while (!open.eof())
 	{
 		open >> t;
+		if (t >= pow(2, no_bits) || t < 0)
+		{
+			cout << "invalid input, dont cares out of range" << endl;
+			return;
+		}
 		for (int i = 0; i < mint.size(); i++)
 			if (t == mint[i])
 			{
 				cout << "Error, there is a dont care value which is equal to one of the minterms" << endl;
+				return;
+			}
+		for(int i = 0; i < dontcares.size(); i++)
+			if (t == dontcares[i])
+			{
+				cout << "Error, there is a dont care appeared more than once" << endl;
 				return;
 			}
 		prime_implicants p;
@@ -107,7 +123,6 @@ void read(string name)
 		cout << pi[i].str << endl;
 
 }
-
 bool one_diff(string a, string b)
 {
 	int flag = 0;
@@ -119,7 +134,6 @@ bool one_diff(string a, string b)
 	else
 		return 0;
 }
-
 void insert_dash(prime_implicants a, prime_implicants b)
 {
 	int flag = 0;
@@ -136,9 +150,7 @@ void insert_dash(prime_implicants a, prime_implicants b)
 		temp.push_back(a);
 
 	}
-
 }
-
 bool not_inside(int x)
 {
 	for (int i = 0; i < to_be_removed.size(); i++)
@@ -146,7 +158,6 @@ bool not_inside(int x)
 			return 0;
 	return 1;
 }
-
 bool inside(string x)
 {
 	for (int i = 0; i < ess.size(); i++)
@@ -154,14 +165,26 @@ bool inside(string x)
 			return 1;
 	return 0;
 }
-
+string change_to_letters(string s)
+{
+	string exp = "";
+	for (int i = 0; i < s.size(); i++)
+		if (s[i] == '1')
+			exp += char(i + 65);
+		else if(s[i] == '0')
+		{
+			exp += char(126);
+			exp += char(i + 65);
+		}
+	return exp;
+}
 void find_pi()
 {
 	int column = 2;
 	int size = pi.size();
 	int flag = 1;
 	while (flag)
-	{	
+	{
 		flag = 0;
 		for (int i = 0; i < pi.size(); i++)
 			for (int j = i + 1; j < pi.size(); j++)
@@ -169,7 +192,7 @@ void find_pi()
 				{
 					flag = 1;
 					insert_dash(pi[i], pi[j]);
-					if(not_inside(i))
+					if (not_inside(i))
 						to_be_removed.push_back(i);
 					if (not_inside(j))
 						to_be_removed.push_back(j);
@@ -184,9 +207,9 @@ void find_pi()
 			cout << "Column " << column << ": " << endl;
 			for (int i = 0; i < pi.size(); i++)
 			{
-				cout << pi[i].str << " Covers these minterms and dont cares: ";
+				cout << pi[i].str << " (" << change_to_letters(pi[i].str) << ')' << " Covers these minterms and dont cares: ";
 				for (int j = 0; j < pi[i].covers.size(); j++)
-					cout << pi[i].covers[j]<< ", ";
+					cout << pi[i].covers[j] << ", ";
 				cout << endl;
 			}
 			column++;
@@ -197,7 +220,6 @@ void find_pi()
 	cout << "Column " << column - 1 << " has the prime implicants " << endl;
 	cout << endl;
 }
-
 bool inside_num(int x, vector<int> n)
 {
 	for (int i = 0; i < n.size(); i++)
@@ -205,7 +227,6 @@ bool inside_num(int x, vector<int> n)
 			return 1;
 	return 0;
 }
-
 bool check_essentials(int num)
 {
 	int counter = 0;
@@ -217,15 +238,14 @@ bool check_essentials(int num)
 		return 1;
 	return 0;
 }
-
 void find_essentials()
 {
 	for (int i = 0; i < pi.size(); i++)
 		for (int j = 0; j < pi[i].covers.size(); j++)
-			if ((check_essentials(pi[i].covers[j])) && (inside_num(pi[i].covers[j], mint))&&(!inside(pi[i].str)))
+			if ((check_essentials(pi[i].covers[j])) && (inside_num(pi[i].covers[j], mint)) && (!inside(pi[i].str)))
 				ess.push_back(pi[i]);
 	for (int i = 0; i < ess.size(); i++)
-		cout << "Essential prime implicants: " << ess[i].str << endl;		
+		cout << "Essential prime implicants: " << ess[i].str << endl;
 	to_be_removed.clear();
 	for (int i = 0; i < ess.size(); i++)
 		for (int j = 0; j < ess[i].covers.size(); j++)
@@ -237,7 +257,6 @@ void find_essentials()
 			cout << mint[i] << ", ";
 	cout << endl;
 }
-
 void main()
 {
 	read("Test.txt");
